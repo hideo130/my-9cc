@@ -26,5 +26,17 @@ assert 15 "5*(9 - 6)"
 assert 7 "1 + 3 + (9 - 6)"
 assert 1 "2 + -1"
 assert 1 "2 + (-1)"
+assert 1 "-1 + 2"
+# equal, not equal
+assert 1 "1 == 1"
+assert 0 "-1 == 1"
+assert 1 "1 < 2"
+assert 1 "2 > 1"
+assert 0 "3 < 2"
+assert 0 "2 > 3"
+assert 1 "1 <= 1"
+assert 1 "1 >= 1"
+assert 0 "1 < 1"
+assert 0 "1 > 1"
 
 echo ok
