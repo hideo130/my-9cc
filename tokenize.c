@@ -26,7 +26,6 @@ void error_at(char *loc, char *fmt, ...)
     exit(1);
 }
 
-
 // 新しいトークンを作成してcurに繋げる
 Token *new_token(TokenKind kind, Token *cur, char *str, int len)
 {
@@ -59,7 +58,7 @@ Token *tokenize(char *p)
         }
 
         // 1文字用のパース
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')')
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == ';')
         {
             // numberと違い、現在のtokenにvalを設定していない
             cur = new_token(TK_RESERVED, cur, p++, 1);
@@ -74,8 +73,8 @@ Token *tokenize(char *p)
             p += 2;
             continue;
         }
-
-        if (*p == '<' || *p == '>')
+        
+        if (*p == '<' || *p == '>' || *p == '=')
         {
             // numberと違い、現在のtokenにvalを設定していない
             cur = new_token(TK_RESERVED, cur, p++, 1);
@@ -88,6 +87,12 @@ Token *tokenize(char *p)
             char *q = p;
             cur->val = strtol(p, &p, 10);
             cur->len = p - q;
+            continue;
+        }
+
+        if ('a' <= *p && *p <= 'z')
+        {
+            cur = new_token(TK_IDENT, cur, p++, 1);
             continue;
         }
 
