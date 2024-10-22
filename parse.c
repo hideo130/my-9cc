@@ -48,6 +48,18 @@ bool at_eof()
     return token->kind == TK_EOF;
 }
 
+LVar *find_lvar(Token *ident_token)
+{
+    for (LVar *var = locals; var; var = var->next)
+    {
+        if (var->len == ident_token->len && !memcmp(ident_token->str, var->name, var->len))
+        {
+            return var;
+        }
+    }
+    return NULL;
+}
+
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -81,14 +93,6 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
     Node *node = new_node(kind);
     node->lhs = lhs;
     node->rhs = rhs;
-    return node;
-}
-
-Node *new_node_lvar(Token *token)
-{
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
-    node->offset = (token->str[0] - 'a' + 1) * 8;
     return node;
 }
 
@@ -219,10 +223,28 @@ Node *primary()
         expect(")");
         return node;
     }
-    Token *tok = consume_ident();
-    if (tok)
+    Token *ident_token = consume_ident();
+    if (ident_token)
     {
-        return new_node_lvar(tok);
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_LVAR;
+        LVar *lvar = find_lvar(ident_token);
+        if (lvar)
+        {
+            node->offset = lvar->offset;
+        }
+        else
+        {
+            lvar = calloc(1, sizeof(LVar));
+            lvar->next = locals;
+            lvar->name = ident_token->str;
+            lvar->len = ident_token->len;
+            
+            lvar->offset = locals->offset + 8;
+            node->offset = lvar->offset;
+            locals = lvar;
+        }
+        return node;
     }
 
     return new_node_num(expect_number());

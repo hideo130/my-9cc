@@ -38,6 +38,20 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len)
     return tok;
 }
 
+Token *new_ident_token(Token *cur, char **str)
+{
+    char *head = *str;
+    while (('a' <= *head && *head <= 'z') ||
+           ('A' <= *head && *head <= 'Z') ||
+           ('0' <= *head && *head <= '9'))
+    {
+        head++;
+    }
+    Token* ret = new_token(TK_IDENT, cur, *str, head - *str);
+    *str = head;
+    return ret;
+}
+
 // bool startswith(char *p, char *q)
 // {
 //     return memcmp(p, q, strlen(q)) == 0;
@@ -73,7 +87,7 @@ Token *tokenize(char *p)
             p += 2;
             continue;
         }
-        
+
         if (*p == '<' || *p == '>' || *p == '=')
         {
             // numberと違い、現在のtokenにvalを設定していない
@@ -90,9 +104,9 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if ('a' <= *p && *p <= 'z')
+        if (('a' <= *p && *p <= 'z' )|| ('A' <= *p && *p <= 'Z'))
         {
-            cur = new_token(TK_IDENT, cur, p++, 1);
+            cur = new_ident_token(cur, &p);
             continue;
         }
 

@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 Node *code[100];
+LVar *locals;
 
 int main(int argc, char **argv)
 {
@@ -9,7 +10,7 @@ int main(int argc, char **argv)
         error("引数の個数が正しくありません\n");
         return 1;
     }
-
+    locals = calloc(1, sizeof(LVar));
     Token *token = tokenize(argv[1]);
     program(token, code);
 

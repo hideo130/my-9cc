@@ -62,3 +62,17 @@ void program(Token *tok, Node *code[]);
 // codegen.c
 //
 void gen(Node *node);
+
+typedef struct LVar LVar;
+
+// type of local variable
+struct LVar
+{
+    LVar *next; // next variable or NULL
+    char *name; // variable name
+    int len; // name of length
+    int offset; // offset from RBP
+};
+
+// local variable
+extern LVar *locals;
