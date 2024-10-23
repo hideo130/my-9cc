@@ -38,16 +38,23 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len)
     return tok;
 }
 
+bool is_alnum(char c)
+{
+    return ('a' <= c && c <= 'z') ||
+           ('A' <= c && c <= 'Z') ||
+           ('0' <= c && c <= '9') ||
+           '_' == c;
+}
+
+
 Token *new_ident_token(Token *cur, char **str)
 {
     char *head = *str;
-    while (('a' <= *head && *head <= 'z') ||
-           ('A' <= *head && *head <= 'Z') ||
-           ('0' <= *head && *head <= '9'))
+    while (is_alnum(*head))
     {
         head++;
     }
-    Token* ret = new_token(TK_IDENT, cur, *str, head - *str);
+    Token *ret = new_token(TK_IDENT, cur, *str, head - *str);
     *str = head;
     return ret;
 }
@@ -104,7 +111,15 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if (('a' <= *p && *p <= 'z' )|| ('A' <= *p && *p <= 'Z'))
+        // return statement
+        if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6]))
+        {
+            cur = new_token(TK_RETURN, cur, p, 6);
+            p += 6;
+            continue;
+        }
+
+        if (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z') || *p == '_')
         {
             cur = new_ident_token(cur, &p);
             continue;

@@ -45,5 +45,10 @@ assert 6 'a=b=3; a+b;'
 assert 3 'ab1=3; ab1;'
 assert 8 'a1=3; z2=5; a1+z2;'
 assert 6 'a1=b2=3; a1+b2;'
+assert 3 'a_1=3; a_1;'
+
+# return
+assert 1 'return 1;'
+assert 1 'a=1; return a;'
 
 echo ok

@@ -3,6 +3,7 @@
 Token *token;
 
 // 現在のtokenがopならば現在のtokenを更新する。
+// this function is only for TK_RESERVED
 bool consume(char *op)
 {
     if (token->kind != TK_RESERVED || token->len != strlen(op) ||
@@ -105,7 +106,19 @@ Node *new_node_num(int val)
 
 Node *stmt()
 {
-    Node *node = expr();
+    Node *node;
+    if (token->kind == TK_RETURN)
+    {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_RETURN;
+        token = token->next;
+        node->lhs = expr();
+    }
+    else
+    {
+        node = expr();
+    }
+
     expect(";");
     return node;
 }
@@ -239,7 +252,7 @@ Node *primary()
             lvar->next = locals;
             lvar->name = ident_token->str;
             lvar->len = ident_token->len;
-            
+
             lvar->offset = locals->offset + 8;
             node->offset = lvar->offset;
             locals = lvar;

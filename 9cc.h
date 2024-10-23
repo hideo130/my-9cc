@@ -14,6 +14,7 @@ typedef enum
     TK_RESERVED,
     TK_IDENT, // identifiers
     TK_NUM,
+    TK_RETURN, // return
     TK_EOF,
 } TokenKind;
 
@@ -46,6 +47,7 @@ typedef enum
     ND_NUM,    // Integer
     ND_ASSIGN, // =
     ND_LVAR,   // local variable
+    ND_RETURN, // return
 } NodeKind;
 // AST node type
 typedef struct Node Node;
