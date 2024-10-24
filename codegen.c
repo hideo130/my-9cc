@@ -1,5 +1,10 @@
 #include "9cc.h"
 
+static int count()
+{
+    static int i = 1;
+    return i++;
+}
 
 // we push variable address at top of stack
 void gen_lval(Node *node)
@@ -45,12 +50,31 @@ void gen(Node *node)
     case ND_RETURN:
         gen(node->lhs);
         printf("    pop rax\n");
-        printf(" mov rsp, rbp\n");
+        printf("    mov rsp, rbp\n");
         printf("    pop rbp\n");
         printf("    ret\n");
         return;
+    case ND_IF:
+        gen(node->cond);
+        printf("    pop rax\n");
+        printf("    cmp rax, 0\n");
+        int label_num = count();
+        if (node->els)
+        {
+            printf("    je  .Lelse%d\n", label_num);
+            gen(node->then);
+            printf("    jmp .Lend%d\n", label_num);
+            printf(".Lelse%d:\n", label_num);
+            gen(node->els);
+        }
+        else
+        {
+            printf("    je  .Lend%d\n", label_num);
+            gen(node->then);
+        }
+        printf(".Lend%d:\n", label_num);
+        return;
     }
-    
 
     gen(node->lhs);
     gen(node->rhs);

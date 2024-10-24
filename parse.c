@@ -104,15 +104,38 @@ Node *new_node_num(int val)
     return node;
 }
 
+bool skip_token(TokenKind kind)
+{
+    if (token->kind == kind)
+    {
+        token = token->next;
+        return true;
+    }
+    return false;
+}
+
 Node *stmt()
 {
     Node *node;
-    if (token->kind == TK_RETURN)
+    if (skip_token(TK_RETURN))
     {
         node = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;
-        token = token->next;
         node->lhs = expr();
+    }
+    else if (skip_token(TK_IF))
+    {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_IF;
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        if (skip_token(TK_ELSE))
+        {
+            node->els = stmt();
+        }
+        return node;
     }
     else
     {

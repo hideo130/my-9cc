@@ -51,4 +51,12 @@ assert 3 'a_1=3; a_1;'
 assert 1 'return 1;'
 assert 1 'a=1; return a;'
 
+# "if" statement
+assert 3 'if(0) return 2; 3;'
+assert 2 'if(1) return 2; 3;'
+assert 3 'a = 3; if(0) return 2; else return a;'
+assert 2 'a = 3; if(1) return 2; else return a;'
+assert 2 'if(1) if(1) return 2;'
+assert 0 'if(1) if(0) return 2; else return 0;'
+
 echo ok
