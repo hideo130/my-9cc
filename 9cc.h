@@ -16,7 +16,8 @@ typedef enum
     TK_NUM,
     TK_RETURN, // return
     TK_IF, // if
-    TK_ELSE,
+    TK_ELSE,   // else
+    TK_WHILE,  // while
     TK_EOF,
 } TokenKind;
 
@@ -50,7 +51,8 @@ typedef enum
     ND_ASSIGN, // =
     ND_LVAR,   // local variable
     ND_RETURN, // return
-    ND_IF,      // if
+    ND_IF,     // if
+    ND_FOR,    // for or while
 } NodeKind;
 // AST node type
 typedef struct Node Node;
@@ -62,10 +64,12 @@ struct Node
     int val;       // Used if kind == ND_NUM
     int offset;    // Used if kind == ND_LVAR
 
-    // "if" statement
+    // "if" or "while" statement
     Node *cond;
     Node *then;
     Node *els;
+    Node *init;
+    Node *inc;
 };
 void program(Token *tok, Node *code[]);
 //

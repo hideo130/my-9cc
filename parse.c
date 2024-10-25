@@ -137,6 +137,16 @@ Node *stmt()
         }
         return node;
     }
+    else if (skip_token(TK_WHILE))
+    {
+        expect("(");
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_FOR;
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        return node;
+    }
     else
     {
         node = expr();
