@@ -61,4 +61,9 @@ assert 0 'if(1) if(0) return 2; else return 0;'
 
 # "while" statement
 assert 2 'a=0; while(a<2) a=a+1; return a;'
+
+# "for" statement
+assert 2 'a=0; for(i=0;i<2;i=i+1) a=a+1; return a;'
+assert 2 'a=0; for(;;) if(a<2) a=a+1; else return a; return a;'
+
 echo ok

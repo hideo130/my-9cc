@@ -147,6 +147,37 @@ Node *stmt()
         node->then = stmt();
         return node;
     }
+    else if (skip_token(TK_FOR))
+    {
+        expect("(");
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_FOR;
+        // init
+        if (!consume(";"))
+        {
+            node->init = expr();
+            // expr is not consume ";"
+            expect(";");
+        }
+
+        // loop condition
+        if (!consume(";"))
+        {
+            node->cond = expr();
+            // expr is not consume ";"
+            expect(";");
+        }
+
+        // inc
+        if (!consume(")"))
+        {
+            node->inc = expr();
+            // expr is not consume ";"
+            expect(")");
+        }
+        node->then = stmt();
+        return node;
+    }
     else
     {
         node = expr();
