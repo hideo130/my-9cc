@@ -15,7 +15,7 @@ typedef enum
     TK_IDENT, // identifiers
     TK_NUM,
     TK_RETURN, // return
-    TK_IF, // if
+    TK_IF,     // if
     TK_ELSE,   // else
     TK_WHILE,  // while
     TK_FOR,
@@ -54,12 +54,14 @@ typedef enum
     ND_RETURN, // return
     ND_IF,     // if
     ND_FOR,    // for or while
+    ND_BLOCK,  // { ... }
 } NodeKind;
 // AST node type
 typedef struct Node Node;
 struct Node
 {
     NodeKind kind; // Node kind
+    Node *next;    // next node of compound statement
     Node *lhs;     // Left-hand side
     Node *rhs;     // Right-hand side
     int val;       // Used if kind == ND_NUM
@@ -71,6 +73,9 @@ struct Node
     Node *els;
     Node *init;
     Node *inc;
+
+    // body for compound statement
+    Node *body;
 };
 void program(Token *tok, Node *code[]);
 //
@@ -85,7 +90,7 @@ struct LVar
 {
     LVar *next; // next variable or NULL
     char *name; // variable name
-    int len; // name of length
+    int len;    // name of length
     int offset; // offset from RBP
 };
 

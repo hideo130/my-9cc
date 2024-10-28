@@ -2,12 +2,17 @@
 
 Token *token;
 
+bool equal(char *op)
+{
+    return token->kind != TK_RESERVED || token->len != strlen(op) ||
+           memcmp(token->str, op, token->len);
+}
+
 // 現在のtokenがopならば現在のtokenを更新する。
 // this function is only for TK_RESERVED
 bool consume(char *op)
 {
-    if (token->kind != TK_RESERVED || token->len != strlen(op) ||
-        memcmp(token->str, op, token->len))
+    if (equal(op))
         return false;
     token = token->next;
     return true;
@@ -62,6 +67,7 @@ LVar *find_lvar(Token *ident_token)
 }
 
 Node *stmt();
+Node *compound_stmt();
 Node *expr();
 Node *assign();
 Node *equality();
@@ -178,6 +184,13 @@ Node *stmt()
         node->then = stmt();
         return node;
     }
+    else if (consume("{"))
+    {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_BLOCK;
+        node->body = compound_stmt();
+        return node;
+    }
     else
     {
         node = expr();
@@ -185,6 +198,18 @@ Node *stmt()
 
     expect(";");
     return node;
+}
+
+Node *compound_stmt()
+{
+    Node head = {};
+    Node *cur = &head;
+    while (!consume("}"))
+    {
+        cur->next = stmt();
+        cur = cur->next;
+    }
+    return head.next;
 }
 
 Node *expr()

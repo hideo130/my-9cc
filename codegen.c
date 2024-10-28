@@ -97,6 +97,14 @@ void gen(Node *node)
         printf("    jmp .Lbegin%d\n", label_num2);
         printf(".Lend%d:\n", label_num2);
         return;
+    case ND_BLOCK:
+        for (Node *s = node->body; s; s = s->next)
+        {
+            gen(s);
+            printf("    pop rax\n");
+        }
+        printf("    push rax\n");
+        return;
     }
 
     gen(node->lhs);

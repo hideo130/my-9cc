@@ -26,6 +26,8 @@ assert 7 "1 + 3 + (9 - 6);"
 assert 1 "2 + -1;"
 assert 1 "2 + (-1);"
 assert 1 "-1 + 2;"
+assert 1 "{-1 + 2;}"
+
 # equal, not equal
 assert 1 "1 == 1;"
 assert 0 "-1 == 1;"
@@ -61,6 +63,7 @@ assert 0 'if(1) if(0) return 2; else return 0;'
 
 # "while" statement
 assert 2 'a=0; while(a<2) a=a+1; return a;'
+assert 4 'a=0; b=0; while(a<2){ a=a+1; b=b+1;} return a+b;'
 
 # "for" statement
 assert 2 'a=0; for(i=0;i<2;i=i+1) a=a+1; return a;'
