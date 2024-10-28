@@ -110,6 +110,28 @@ Node *new_node_num(int val)
     return node;
 }
 
+Node *new_ident(Token *ident_token)
+{
+    Node *node = new_node(ND_LVAR);
+    LVar *lvar = find_lvar(ident_token);
+    if (lvar)
+    {
+        node->offset = lvar->offset;
+    }
+    else
+    {
+        lvar = calloc(1, sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = ident_token->str;
+        lvar->len = ident_token->len;
+
+        lvar->offset = locals->offset + 8;
+        node->offset = lvar->offset;
+        locals = lvar;
+    }
+    return node;
+}
+
 bool skip_token(TokenKind kind)
 {
     if (token->kind == kind)
@@ -317,6 +339,9 @@ Node *unary()
     }
 }
 
+// primary = num
+//         | ident ("(" ")")?
+//         | "(" expr ")"
 Node *primary()
 {
     if (consume("("))
@@ -328,25 +353,7 @@ Node *primary()
     Token *ident_token = consume_ident();
     if (ident_token)
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
-        LVar *lvar = find_lvar(ident_token);
-        if (lvar)
-        {
-            node->offset = lvar->offset;
-        }
-        else
-        {
-            lvar = calloc(1, sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = ident_token->str;
-            lvar->len = ident_token->len;
-
-            lvar->offset = locals->offset + 8;
-            node->offset = lvar->offset;
-            locals = lvar;
-        }
-        return node;
+        return new_ident(ident_token);
     }
 
     return new_node_num(expect_number());
