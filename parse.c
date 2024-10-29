@@ -110,7 +110,7 @@ Node *new_node_num(int val)
     return node;
 }
 
-Node *new_ident(Token *ident_token)
+Node *new_ident_node(Token *ident_token)
 {
     Node *node = new_node(ND_LVAR);
     LVar *lvar = find_lvar(ident_token);
@@ -129,6 +129,15 @@ Node *new_ident(Token *ident_token)
         node->offset = lvar->offset;
         locals = lvar;
     }
+    return node;
+}
+
+Node *new_func_node(Token *func_token)
+{
+    Node *node = new_node(ND_FUNC);
+    node->func_name = calloc(func_token->len + 1, sizeof(char));
+    strncpy(node->func_name, func_token->str, func_token->len);
+    expect(")");
     return node;
 }
 
@@ -353,7 +362,14 @@ Node *primary()
     Token *ident_token = consume_ident();
     if (ident_token)
     {
-        return new_ident(ident_token);
+        if (consume("("))
+        {
+            return new_func_node(ident_token);
+        }
+        else
+        {
+            return new_ident_node(ident_token);
+        }
     }
 
     return new_node_num(expect_number());

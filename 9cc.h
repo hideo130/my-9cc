@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 //
 // tokenize.c
 //
@@ -18,7 +19,7 @@ typedef enum
     TK_IF,     // if
     TK_ELSE,   // else
     TK_WHILE,  // while
-    TK_FOR,
+    TK_FOR,    // for
     TK_EOF,
 } TokenKind;
 
@@ -55,6 +56,7 @@ typedef enum
     ND_IF,     // if
     ND_FOR,    // for or while
     ND_BLOCK,  // { ... }
+    ND_FUNC,   // function
 } NodeKind;
 // AST node type
 typedef struct Node Node;
@@ -66,6 +68,9 @@ struct Node
     Node *rhs;     // Right-hand side
     int val;       // Used if kind == ND_NUM
     int offset;    // Used if kind == ND_LVAR
+    
+    // function
+    char* func_name;
 
     // "if" or "while" statement
     Node *cond;
@@ -75,7 +80,7 @@ struct Node
     Node *inc;
 
     // body for compound statement
-    Node *body;
+    Node *body;    
 };
 void program(Token *tok, Node *code[]);
 //

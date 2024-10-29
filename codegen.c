@@ -105,6 +105,20 @@ void gen(Node *node)
         }
         printf("    push rax\n");
         return;
+    case ND_FUNC:
+        printf("    push r12\n");
+        // save original rsp to r12
+        printf("    mov r12, rsp\n");
+        printf("    and rsp, 0xfffffffffffffff0\n");
+        printf("    mov rax, 0\n");
+        printf("    call %s\n", node->func_name);
+        // recover original rsp from r12
+        printf("    mov rsp, r12\n");
+        printf("    pop r12\n");
+        // normally the return value is set in rax
+        // but now we assume the result is placed on the top of the stack
+        printf("    push rax\n");
+        return;
     }
 
     gen(node->lhs);
