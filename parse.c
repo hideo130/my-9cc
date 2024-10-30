@@ -132,12 +132,29 @@ Node *new_ident_node(Token *ident_token)
     return node;
 }
 
+// func-call = ident "(" ")" ||
+// ident "(" assign ( "," , assign )* )
 Node *new_func_node(Token *func_token)
 {
     Node *node = new_node(ND_FUNC);
     node->func_name = calloc(func_token->len + 1, sizeof(char));
     strncpy(node->func_name, func_token->str, func_token->len);
-    expect(")");
+
+    int arg_num = 0;
+    Node head = {};
+    Node *cur = &head;
+    while (!consume(")"))
+    {
+        arg_num++;
+        if (cur != &head)
+        {
+            expect(",");
+        }
+        cur->next = assign();
+        cur = cur->next;
+    }
+    node->args = head.next;
+    node->arg_num = arg_num;
     return node;
 }
 
@@ -349,7 +366,8 @@ Node *unary()
 }
 
 // primary = num
-//         | ident ("(" ")")?
+//         | ident
+//         | func-call
 //         | "(" expr ")"
 Node *primary()
 {

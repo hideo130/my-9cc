@@ -6,6 +6,8 @@ static int count()
     return i++;
 }
 
+const char argument_reg[][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 // we push variable address at top of stack
 void gen_lval(Node *node)
 {
@@ -17,6 +19,27 @@ void gen_lval(Node *node)
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", node->offset);
     printf("    push rax\n");
+}
+
+void gen_args(Node *arg)
+{
+    int arg_num = arg->arg_num;
+    Node *now = arg->args;
+    for (int i = 0; i < arg_num; i++)
+    {
+        printf("    push %s\n", argument_reg[i]);
+        gen(now);
+        printf("    pop %s\n", argument_reg[i]);
+        now = now->next;
+    }
+}
+
+void recov_arg_reg(int arg_num)
+{
+    for (int i = arg_num; i > 0; i--)
+    {
+        printf("    pop %s\n", argument_reg[i - 1]);
+    }
 }
 
 void gen(Node *node)
@@ -106,6 +129,8 @@ void gen(Node *node)
         printf("    push rax\n");
         return;
     case ND_FUNC:
+        // set arguments to register
+        gen_args(node);
         printf("    push r12\n");
         // save original rsp to r12
         printf("    mov r12, rsp\n");
@@ -115,6 +140,9 @@ void gen(Node *node)
         // recover original rsp from r12
         printf("    mov rsp, r12\n");
         printf("    pop r12\n");
+
+        recov_arg_reg(node->arg_num);
+
         // normally the return value is set in rax
         // but now we assume the result is placed on the top of the stack
         printf("    push rax\n");

@@ -63,7 +63,7 @@ typedef struct Node Node;
 struct Node
 {
     NodeKind kind; // Node kind
-    Node *next;    // next node of compound statement
+    Node *next;    // next node of compound statement or next argument
     Node *lhs;     // Left-hand side
     Node *rhs;     // Right-hand side
     int val;       // Used if kind == ND_NUM
@@ -71,6 +71,10 @@ struct Node
     
     // function
     char* func_name;
+    // if ND_FUNC has args.
+    // if function has multiple argument, we traverse by next variable.
+    Node* args;
+    int arg_num;
 
     // "if" or "while" statement
     Node *cond;
