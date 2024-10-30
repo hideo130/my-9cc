@@ -71,7 +71,7 @@ struct Node
     
     // function
     char* func_name;
-    // if ND_FUNC has args.
+    // if kind == ND_FUNC has args.
     // if function has multiple argument, we traverse by next variable.
     Node* args;
     int arg_num;
@@ -86,11 +86,6 @@ struct Node
     // body for compound statement
     Node *body;    
 };
-void program(Token *tok, Node *code[]);
-//
-// codegen.c
-//
-void gen(Node *node);
 
 typedef struct LVar LVar;
 
@@ -105,3 +100,21 @@ struct LVar
 
 // local variable
 extern LVar *locals;
+
+typedef struct Function Function;
+
+struct Function
+{
+    Function *next;
+    char* func_name;
+    Node* body;
+    LVar* vars;
+
+};
+
+Function* program(Token *tok);
+
+//
+// codegen.c
+//
+void codegen(Function *fn);

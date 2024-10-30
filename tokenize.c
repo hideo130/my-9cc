@@ -58,10 +58,6 @@ Token *new_ident_token(Token *cur, char **str)
     return ret;
 }
 
-// bool startswith(char *p, char *q)
-// {
-//     return memcmp(p, q, strlen(q)) == 0;
-// }
 
 Token *tokenize(char *p)
 {

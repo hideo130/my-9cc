@@ -1,18 +1,19 @@
 #include "9cc.h"
 
 Token *token;
+LVar *locals;
 
 bool equal(char *op)
 {
-    return token->kind != TK_RESERVED || token->len != strlen(op) ||
-           memcmp(token->str, op, token->len);
+    return token->kind == TK_RESERVED && token->len == strlen(op) && 
+           memcmp(token->str, op, token->len) == 0;
 }
 
 // 現在のtokenがopならば現在のtokenを更新する。
 // this function is only for TK_RESERVED
 bool consume(char *op)
 {
-    if (equal(op))
+    if (!equal(op))
         return false;
     token = token->next;
     return true;
@@ -66,6 +67,7 @@ LVar *find_lvar(Token *ident_token)
     return NULL;
 }
 
+Function *function();
 Node *stmt();
 Node *compound_stmt();
 Node *expr();
@@ -77,15 +79,37 @@ Node *mul();
 Node *unary();
 Node *primary();
 
-void program(Token *tok, Node *code[])
+Function *function()
+{
+    Function *fn = calloc(1, sizeof(Function));
+    Token *func_token = consume_ident();
+    // copy function name
+    fn->func_name = calloc(func_token->len + 1, sizeof(char));
+    strncpy(fn->func_name, func_token->str, func_token->len);
+
+    expect("(");
+    expect(")");
+    locals = NULL;
+    // function must have compound statement
+    if (!equal("{"))
+        error_at(token->str, "'{'ではありません");
+    fn->body = stmt();
+    fn->vars = locals;
+
+    return fn;
+}
+
+// program = function-definition*
+Function *program(Token *tok)
 {
     token = tok;
-    int i = 0;
+    Function head = {};
+    Function *cur = &head;
     while (!at_eof())
     {
-        code[i++] = stmt();
+        cur = cur->next = function();
     }
-    code[i] = NULL;
+    return head.next;
 }
 
 Node *new_node(NodeKind kind)
@@ -124,16 +148,22 @@ Node *new_ident_node(Token *ident_token)
         lvar->next = locals;
         lvar->name = ident_token->str;
         lvar->len = ident_token->len;
-
-        lvar->offset = locals->offset + 8;
+        if (locals)
+        {
+            lvar->offset = locals->offset + 8;
+        }
+        else
+        {
+            lvar->offset = 8;
+        }
         node->offset = lvar->offset;
         locals = lvar;
     }
     return node;
 }
 
-// func-call = ident "(" ")" ||
-// ident "(" assign ( "," , assign )* )
+// func-call = ident "(" ")" |
+//            ident "(" assign ( "," , assign )* )
 Node *new_func_node(Token *func_token)
 {
     Node *node = new_node(ND_FUNC);
@@ -168,6 +198,12 @@ bool skip_token(TokenKind kind)
     return false;
 }
 
+// stmt = expr ";"
+//      | "return" expr ";"
+//      | "{" stmt* "}"
+//      | "if" "(" expr ")" stmt ("else" stmt)?
+//      | "while" "(" expr ")" stmt
+//      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 Node *stmt()
 {
     Node *node;

@@ -194,3 +194,42 @@ void gen(Node *node)
 
     printf("    push rax\n");
 }
+
+int update_arg_offset(LVar *var)
+{
+    int offset = 0;
+    for (LVar *now = var; now; now = now->next)
+    {
+        now->offset = offset + 8;
+        offset += 8;
+    }
+    return offset;
+}
+
+void codegen(Function *fn)
+{
+    for (Function *target_func = fn; target_func; target_func = target_func->next)
+    {
+        int offset_size = update_arg_offset(target_func->vars);
+        printf(".globl %s\n", target_func->func_name);
+        printf("%s:\n", target_func->func_name);
+
+        // prologue
+        // allocate space for 26 variables
+        printf("    push rbp\n");
+        printf("    mov rbp, rsp\n");
+        printf("    sub rsp, %d\n", offset_size);
+
+        gen(fn->body);
+
+        // one value left on the stack as a result of evaluating the expression,
+        // so pop it to prevent the stack from overflowing.
+        printf("    pop rax\n");
+
+        // epilogue
+        // The result of the last expression remains in RAX, so it becomes the return value
+        printf("    mov rsp, rbp\n");
+        printf("    pop rbp\n");
+        printf("    ret\n");
+    }
+}
