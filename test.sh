@@ -49,6 +49,7 @@ assert 0 "main() { return 1 > 1; }"
 
 assert 3 'main() { a=3; return a;}'
 assert 8 'main() { a=3; z=5; return a+z; }'
+assert 15 'main() { a=3; z=5; return a*z; }'
 assert 6 'main() { a=b=3; return a+b; }'
 
 assert 3 'main() { ab1=3; return ab1; }'
@@ -84,4 +85,10 @@ assert 136 'main() { return add6(1,2,add6(3,add6(4,5,6,7,8,9),10,11,12,13),14,15
 
 # functaion definition 
 assert 1 'ret1() { return 1; } main() { return ret1(); }'
+assert 2 'myident(a) { return a; } main() { return myident(2); }'
+assert 6 'mymul(a, b) { return a*b; } main() { return mymul(2, 3); }'
+assert 21 'myadd6(a, b, c, d, e, f) { return a + b + c + d + e + f; } main() { return myadd6(1,2,3,4,5,6); }'
+assert 66 'myadd6(a, b, c, d, e, f) { return a + b + c + d + e + f; } main() { return myadd6(1,2,myadd6(3,4,5,6,7,8),9,10,11); }'
+assert 136 'myadd6(a, b, c, d, e, f) { return a + b + c + d + e + f; } main() { return myadd6(1,2,myadd6(3,myadd6(4,5,6,7,8,9),10,11,12,13),14,15,16); }'
+
 echo ok

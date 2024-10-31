@@ -3,9 +3,11 @@
 Token *token;
 LVar *locals;
 
+Node *new_node(NodeKind kind);
+
 bool equal(char *op)
 {
-    return token->kind == TK_RESERVED && token->len == strlen(op) && 
+    return token->kind == TK_RESERVED && token->len == strlen(op) &&
            memcmp(token->str, op, token->len) == 0;
 }
 
@@ -79,6 +81,46 @@ Node *mul();
 Node *unary();
 Node *primary();
 
+void parse_arg_definition(Function *fn)
+{
+    int is_first = 0;
+    Node head = {};
+    Node *cur = &head;
+    expect("(");
+
+    while (!consume(")"))
+    {
+        if (is_first != 0)
+            expect(",");
+        is_first = 1;
+
+        if (find_lvar(token))
+            error_at(token->str, "same arg names are now allowed.");
+        LVar *lvar = calloc(1, sizeof(LVar));
+        Node *node = new_node(ND_LVAR);
+
+        lvar = calloc(1, sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = token->str;
+        lvar->len = token->len;
+        if (locals)
+        {
+            lvar->offset = locals->offset + 8;
+        }
+        else
+        {
+            lvar->offset = 8;
+        }
+        node->offset = lvar->offset;
+        token = token->next;
+        locals = lvar;
+        cur = cur->next = node;
+    }
+    fn->args = head.next;
+}
+
+// function-definition = ident "(" ")"
+//  | ident "(" ident, (",", ident)* ")"
 Function *function()
 {
     Function *fn = calloc(1, sizeof(Function));
@@ -87,9 +129,8 @@ Function *function()
     fn->func_name = calloc(func_token->len + 1, sizeof(char));
     strncpy(fn->func_name, func_token->str, func_token->len);
 
-    expect("(");
-    expect(")");
     locals = NULL;
+    parse_arg_definition(fn);
     // function must have compound statement
     if (!equal("{"))
         error_at(token->str, "'{'ではありません");

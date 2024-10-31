@@ -21,6 +21,7 @@ void gen_lval(Node *node)
     printf("    push rax\n");
 }
 
+// function call
 void gen_args(Node *arg)
 {
     int arg_num = arg->arg_num;
@@ -206,6 +207,22 @@ int update_arg_offset(LVar *var)
     return offset;
 }
 
+// arguments are reference by ident.
+// begining of function, arguments are set in register
+// so we place them to stack
+void save_reg_of_argment_to_stack(Function *fn)
+{
+    int i = 0;
+    for (Node *arg = fn->args; arg; arg = arg->next)
+    {
+
+        gen_lval(arg);
+        printf("    pop rax\n");
+        printf("    mov [rax], %s\n", argument_reg[i]);
+        i += 1;
+    }
+}
+
 void codegen(Function *fn)
 {
     for (Function *target_func = fn; target_func; target_func = target_func->next)
@@ -215,12 +232,13 @@ void codegen(Function *fn)
         printf("%s:\n", target_func->func_name);
 
         // prologue
-        // allocate space for 26 variables
         printf("    push rbp\n");
         printf("    mov rbp, rsp\n");
         printf("    sub rsp, %d\n", offset_size);
 
-        gen(fn->body);
+        save_reg_of_argment_to_stack(target_func);
+
+        gen(target_func->body);
 
         // one value left on the stack as a result of evaluating the expression,
         // so pop it to prevent the stack from overflowing.

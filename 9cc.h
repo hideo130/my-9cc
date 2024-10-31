@@ -94,7 +94,7 @@ struct LVar
 {
     LVar *next; // next variable or NULL
     char *name; // variable name
-    int len;    // name of length
+    int len;    // length of name
     int offset; // offset from RBP
 };
 
@@ -109,6 +109,7 @@ struct Function
     char* func_name;
     Node* body;
     LVar* vars;
+    Node* args;
 
 };
 
