@@ -136,7 +136,6 @@ void gen(Node *node)
         // save original rsp to r12
         printf("    mov r12, rsp\n");
         printf("    and rsp, 0xfffffffffffffff0\n");
-        printf("    mov rax, 0\n");
         printf("    call %s\n", node->func_name);
         // recover original rsp from r12
         printf("    mov rsp, r12\n");
