@@ -5,6 +5,7 @@ int ret5() { return 5; }
 int identity(int a) { return a; }
 int add2(int a, int b) { return a + b; }
 int add6(int a, int b, int c, int d, int e, int f) { return a + b + c + d + e + f; }
+int rec2(int a){ if(a==0)return 2; return rec2(a-1); }
 EOF
 
 assert(){
@@ -90,5 +91,12 @@ assert 6 'mymul(a, b) { return a*b; } main() { return mymul(2, 3); }'
 assert 21 'myadd6(a, b, c, d, e, f) { return a + b + c + d + e + f; } main() { return myadd6(1,2,3,4,5,6); }'
 assert 66 'myadd6(a, b, c, d, e, f) { return a + b + c + d + e + f; } main() { return myadd6(1,2,myadd6(3,4,5,6,7,8),9,10,11); }'
 assert 136 'myadd6(a, b, c, d, e, f) { return a + b + c + d + e + f; } main() { return myadd6(1,2,myadd6(3,myadd6(4,5,6,7,8,9),10,11,12,13),14,15,16); }'
+
+
+assert 2 'myret2(a) { if(a == 0) return 2;  return myret2(a-1); } main() { return myret2(5); }'
+assert 5 'fib(a) { if(a == 0) return 0; if(a == 1) return 1; return fib(a-1) + fib(a-2); } main() { return fib(5); }'
+assert 55 'fib(a) { if(a == 0) return 0; if(a == 1) return 1; return fib(a-1) + fib(a-2); } main() { return fib(10); }'
+
+
 
 echo ok

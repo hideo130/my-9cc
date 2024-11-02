@@ -93,7 +93,11 @@ void gen(Node *node)
         }
         else
         {
+            printf("    sete al\n");
+            printf("    movzb rax, al\n");
+            printf("    push rax\n");
             printf("    je  .Lend%d\n", label_num);
+            printf("    pop rax\n");
             gen(node->then);
         }
         printf(".Lend%d:\n", label_num);
