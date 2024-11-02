@@ -160,6 +160,13 @@ Node *new_node(NodeKind kind)
     return node;
 }
 
+Node *new_lhs_node(NodeKind kind, Node *lhs)
+{
+    Node *node = new_node(kind);
+    node->lhs = lhs;
+    return node;
+}
+
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
 {
     Node *node = new_node(kind);
@@ -250,9 +257,7 @@ Node *stmt()
     Node *node;
     if (skip_token(TK_RETURN))
     {
-        node = calloc(1, sizeof(Node));
-        node->kind = ND_RETURN;
-        node->lhs = expr();
+        node = new_lhs_node(ND_RETURN, expr());
     }
     else if (skip_token(TK_IF))
     {
@@ -426,6 +431,7 @@ Node *mul()
     }
 }
 
+// unary = ("+" | "-" | "*" | "&")? primary
 Node *unary()
 {
     if (consume("+"))
@@ -435,6 +441,14 @@ Node *unary()
     else if (consume("-"))
     {
         return new_binary(ND_SUB, new_node_num(0), primary());
+    }
+    else if (consume("&"))
+    {
+        return new_lhs_node(ND_ADDR, primary());
+    }
+    else if (consume("*"))
+    {
+        return new_lhs_node(ND_DEREF, primary());
     }
     else
     {

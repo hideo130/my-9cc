@@ -98,5 +98,8 @@ assert 5 'fib(a) { if(a == 0) return 0; if(a == 1) return 1; return fib(a-1) + f
 assert 55 'fib(a) { if(a == 0) return 0; if(a == 1) return 1; return fib(a-1) + fib(a-2); } main() { return fib(10); }'
 
 
+# reference and
+assert 3 "main() {x=3;y=&x; return *y;}"
+assert 3 "main() {x=3; y=5; z=&y+8; return *z;}"
 
 echo ok

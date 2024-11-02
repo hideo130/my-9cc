@@ -46,6 +46,20 @@ bool is_alnum(char c)
            '_' == c;
 }
 
+// if reserved token, return true
+bool is_reserved_token(char *cur)
+{
+    char target[] = "+-*/();{},&";
+    for (int i = 0; i < sizeof(target); i++)
+    {
+        if (target[i] == *cur)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 Token *new_ident_token(Token *cur, char **str)
 {
     char *head = *str;
@@ -57,7 +71,6 @@ Token *new_ident_token(Token *cur, char **str)
     *str = head;
     return ret;
 }
-
 
 Token *tokenize(char *p)
 {
@@ -74,7 +87,7 @@ Token *tokenize(char *p)
         }
 
         // 1文字用のパース
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == ';' || *p == '{' || *p == '}' || *p == ',')
+        if (is_reserved_token(p))
         {
             // numberと違い、現在のtokenにvalを設定していない
             cur = new_token(TK_RESERVED, cur, p++, 1);

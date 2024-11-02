@@ -57,6 +57,8 @@ typedef enum
     ND_FOR,    // for or while
     ND_BLOCK,  // { ... }
     ND_FUNC,   // function
+    ND_ADDR,   // reference *
+    ND_DEREF,  // &
 } NodeKind;
 // AST node type
 typedef struct Node Node;
