@@ -48,10 +48,12 @@ assert 1 "main() { return 1 >= 1; }"
 assert 0 "main() { return 1 < 1; }"
 assert 0 "main() { return 1 > 1; }"
 
-assert 3 'main() {int a; a=3; return a;}'
+assert 3 'main() {int a=3; return a;}'
 assert 8 'main() {int a; int z; a=3; z=5; return a+z; }'
 assert 15 'main() {int a; int z; a=3; z=5; return a*z; }'
 assert 6 'main() {int a; int b; a=b=3; return a+b; }'
+assert 2 "main() {int a=b=1; return a + b;}"
+
 
 assert 3 'main() {int ab1; ab1=3; return ab1; }'
 assert 8 'main() {int a1;int z2; a1=3; z2=5; return a1+z2; }'

@@ -72,6 +72,22 @@ Token *new_ident_token(Token *cur, char **str)
     return ret;
 }
 
+int is_type_token(char *p)
+{
+    char *keyword[] = {"int"};
+    int len = sizeof(keyword) / sizeof(*keyword);
+    for (int i = 0; i < len; i++)
+    {
+        int k_len = strlen(keyword[i]);
+        if (memcmp(p, keyword[i], k_len) == 0)
+        {
+            return k_len;
+        }
+    }
+
+    return 0;
+}
+
 Token *tokenize(char *p)
 {
     user_input = p;
@@ -152,6 +168,13 @@ Token *tokenize(char *p)
         {
             cur = new_token(TK_FOR, cur, p, 3);
             p += 3;
+            continue;
+        }
+        int type_len = is_type_token(p);
+        if (type_len)
+        {
+            cur = new_token(TK_TYPE, cur, p, type_len);
+            p += type_len;
             continue;
         }
 

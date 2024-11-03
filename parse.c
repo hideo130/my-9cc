@@ -2,6 +2,7 @@
 
 Token *token;
 LVar *locals;
+bool is_initialize_variable;
 
 Node *new_node(NodeKind kind);
 
@@ -9,6 +10,11 @@ bool equal(char *op)
 {
     return token->len == strlen(op) &&
            memcmp(token->str, op, token->len) == 0;
+}
+
+bool is_type()
+{
+    return token->kind == TK_TYPE;
 }
 
 char *copy_token_str(Token *target)
@@ -202,17 +208,26 @@ Node *new_node_num(int val)
 
 Node *new_ident_node(Token *ident_token)
 {
-    Node *node = new_node(ND_LVAR);
+
     LVar *lvar = find_lvar(ident_token);
     if (lvar)
     {
+        Node *node = new_node(ND_LVAR);
         node->offset = lvar->offset;
+        return node;
+    }
+    else if (is_initialize_variable)
+    {
+        // In defining variable we can defin new variable.
+        // this path is to support int a=b=1;
+        Node *node = append_lvar(ident_token);
+        return node;
     }
     else
     {
         error_at(ident_token->str, "undefined token");
+        return NULL;
     }
-    return node;
 }
 
 // func-call = ident "(" ")" |
@@ -258,9 +273,13 @@ Node *compound_stmt()
     Node *cur = &head;
     while (!consume("}"))
     {
-        if (equal("int"))
+        if (is_type())
         {
-            cur = cur->next = declaration();
+            Node *node = declaration();
+            if (node)
+            {
+                cur = cur->next = node;
+            }
         }
         else
         {
@@ -363,6 +382,7 @@ void declspec()
 // declarator = ident
 Token *declarator()
 {
+    // In specification "int" keyword only statement is ok but, this compiler does not accept.
     if (token->kind != TK_IDENT)
         error_at(token->str, "expect a variable name, but got %s", copy_token_str(token));
     Token *tmp = token;
@@ -374,14 +394,49 @@ Token *declarator()
 Node *declaration()
 {
     declspec();
-    Token *name = declarator();
-    if (find_lvar(name))
+    Node head = {};
+    Node *cur = &head;
+    if (token->kind != TK_IDENT)
     {
-        error_at(token->str, "redefinition of ‘%s’", copy_token_str(token));
+        return cur;
     }
-    Node *node = append_lvar(name);
+
+    int is_first = 0;
+    is_initialize_variable = 1;
+    while (token->kind == TK_IDENT)
+    {
+        if (is_first != 0)
+        {
+            is_first = 1;
+            expect(",");
+        }
+        Token *name = declarator();
+        if (find_lvar(name))
+        {
+            error_at(token->str, "redefinition of ‘%s’", copy_token_str(token));
+        }
+        Node *tmp = append_lvar(name);
+        if (!consume("="))
+        {
+            cur = cur->next = tmp;
+            continue;
+        }
+        else
+        {
+            cur = cur->next = new_binary(ND_ASSIGN, tmp, assign());
+        }
+    }
+    is_initialize_variable = 0;
+
     expect(";");
-    return node;
+    if (cur == &head)
+    {
+        // we dont have variable definition with initial condition.
+        return cur;
+    }
+    Node *ret = new_node(ND_BLOCK);
+    ret->body = head.next;
+    return ret;
 }
 
 Node *expr()
