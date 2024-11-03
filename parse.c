@@ -7,18 +7,30 @@ Node *new_node(NodeKind kind);
 
 bool equal(char *op)
 {
-    return token->kind == TK_RESERVED && token->len == strlen(op) &&
+    return token->len == strlen(op) &&
            memcmp(token->str, op, token->len) == 0;
 }
 
+char *copy_token_str(Token *target)
+{
+    char *s = calloc(target->len + 1, sizeof(char));
+    strncpy(s, target->str, target->len);
+    return s;
+}
+
 // 現在のtokenがopならば現在のtokenを更新する。
-// this function is only for TK_RESERVED
 bool consume(char *op)
 {
     if (!equal(op))
         return false;
     token = token->next;
     return true;
+}
+
+void skip(char *op)
+{
+    if (equal(op))
+        token = token->next;
 }
 
 Token *consume_ident()
@@ -36,7 +48,7 @@ void expect(char *op)
 {
     if (token->kind != TK_RESERVED || strlen(op) != token->len ||
         memcmp(token->str, op, token->len))
-        error_at(token->str, "'%c'ではありません", op);
+        error_at(token->str, "'%s'ではありません", op);
     token = token->next;
 }
 
@@ -69,9 +81,31 @@ LVar *find_lvar(Token *ident_token)
     return NULL;
 }
 
+Node *append_lvar(Token *target)
+{
+    LVar *lvar = calloc(1, sizeof(LVar));
+    Node *node = new_node(ND_LVAR);
+
+    lvar->next = locals;
+    lvar->name = target->str;
+    lvar->len = target->len;
+    if (locals)
+    {
+        lvar->offset = locals->offset + 8;
+    }
+    else
+    {
+        lvar->offset = 8;
+    }
+    node->offset = lvar->offset;
+    locals = lvar;
+    return node;
+}
+
 Function *function();
-Node *stmt();
 Node *compound_stmt();
+Node *stmt();
+Node *declaration();
 Node *expr();
 Node *assign();
 Node *equality();
@@ -95,25 +129,9 @@ void parse_arg_definition(Function *fn)
         is_first = 1;
 
         if (find_lvar(token))
-            error_at(token->str, "same arg names are now allowed.");
-        LVar *lvar = calloc(1, sizeof(LVar));
-        Node *node = new_node(ND_LVAR);
-
-        lvar = calloc(1, sizeof(LVar));
-        lvar->next = locals;
-        lvar->name = token->str;
-        lvar->len = token->len;
-        if (locals)
-        {
-            lvar->offset = locals->offset + 8;
-        }
-        else
-        {
-            lvar->offset = 8;
-        }
-        node->offset = lvar->offset;
+            error_at(token->str, "same arg names are not allowed.");
+        Node *node = append_lvar(token);
         token = token->next;
-        locals = lvar;
         cur = cur->next = node;
     }
     fn->args = head.next;
@@ -192,20 +210,7 @@ Node *new_ident_node(Token *ident_token)
     }
     else
     {
-        lvar = calloc(1, sizeof(LVar));
-        lvar->next = locals;
-        lvar->name = ident_token->str;
-        lvar->len = ident_token->len;
-        if (locals)
-        {
-            lvar->offset = locals->offset + 8;
-        }
-        else
-        {
-            lvar->offset = 8;
-        }
-        node->offset = lvar->offset;
-        locals = lvar;
+        error_at(ident_token->str, "undefined token");
     }
     return node;
 }
@@ -244,6 +249,25 @@ bool skip_token(TokenKind kind)
         return true;
     }
     return false;
+}
+
+// compound_stmt = stmt | declaration
+Node *compound_stmt()
+{
+    Node head = {};
+    Node *cur = &head;
+    while (!consume("}"))
+    {
+        if (equal("int"))
+        {
+            cur = cur->next = declaration();
+        }
+        else
+        {
+            cur = cur->next = stmt();
+        }
+    }
+    return head.next;
 }
 
 // stmt = expr ";"
@@ -330,16 +354,34 @@ Node *stmt()
     return node;
 }
 
-Node *compound_stmt()
+// declspec = "int"?
+void declspec()
 {
-    Node head = {};
-    Node *cur = &head;
-    while (!consume("}"))
+    skip("int");
+}
+
+// declarator = ident
+Token *declarator()
+{
+    if (token->kind != TK_IDENT)
+        error_at(token->str, "expect a variable name, but got %s", copy_token_str(token));
+    Token *tmp = token;
+    token = token->next;
+    return tmp;
+}
+
+// declaration = declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
+Node *declaration()
+{
+    declspec();
+    Token *name = declarator();
+    if (find_lvar(name))
     {
-        cur->next = stmt();
-        cur = cur->next;
+        error_at(token->str, "redefinition of ‘%s’", copy_token_str(token));
     }
-    return head.next;
+    Node *node = append_lvar(name);
+    expect(";");
+    return node;
 }
 
 Node *expr()

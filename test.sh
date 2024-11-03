@@ -48,31 +48,31 @@ assert 1 "main() { return 1 >= 1; }"
 assert 0 "main() { return 1 < 1; }"
 assert 0 "main() { return 1 > 1; }"
 
-assert 3 'main() { a=3; return a;}'
-assert 8 'main() { a=3; z=5; return a+z; }'
-assert 15 'main() { a=3; z=5; return a*z; }'
-assert 6 'main() { a=b=3; return a+b; }'
+assert 3 'main() {int a; a=3; return a;}'
+assert 8 'main() {int a; int z; a=3; z=5; return a+z; }'
+assert 15 'main() {int a; int z; a=3; z=5; return a*z; }'
+assert 6 'main() {int a; int b; a=b=3; return a+b; }'
 
-assert 3 'main() { ab1=3; return ab1; }'
-assert 8 'main() { a1=3; z2=5; return a1+z2; }'
-assert 6 'main() { a1=b2=3; return a1+b2; }'
-assert 3 'main() { a_1=3; return a_1; }'
+assert 3 'main() {int ab1; ab1=3; return ab1; }'
+assert 8 'main() {int a1;int z2; a1=3; z2=5; return a1+z2; }'
+assert 6 'main() {int a1;int b2; a1=b2=3; return a1+b2; }'
+assert 3 'main() {int a_1; a_1=3; return a_1; }'
 
 # "if" statement
 assert 3 'main() { if(0) return 2; return 3; }'
 assert 2 'main() { if(1) return 2; return 3; }'
-assert 3 'main() { a = 3; if(0) return 2; else return a; }'
-assert 2 'main() { a = 3; if(1) return 2; else return a; }'
+assert 3 'main() {int a; a = 3; if(0) return 2; else return a; }'
+assert 2 'main() {int a; a = 3; if(1) return 2; else return a; }'
 assert 2 'main() { if(1) if(1) return 2; }'
 assert 0 'main() { if(1) if(0) return 2; else return 0; }'
 
 # "while" statement
-assert 2 'main() { a=0; while(a<2) a=a+1; return a; }'
-assert 4 'main() { a=0; b=0; while(a<2){ a=a+1; b=b+1;} return a+b; }'
+assert 2 'main() {int a; a=0; while(a<2) a=a+1; return a; }'
+assert 4 'main() {int a;int b; a=0; b=0; while(a<2){ a=a+1; b=b+1;} return a+b; }'
 
 # "for" statement
-assert 2 'main() { a=0; for(i=0;i<2;i=i+1) a=a+1; return a; }'
-assert 2 'main() { a=0; for(;;) if(a<2) a=a+1; else return a; return a; }'
+assert 2 'main() {int a; a=0; int i; for(i=0;i<2;i=i+1) a=a+1; return a; }'
+assert 2 'main() {int a; a=0; for(;;) if(a<2) a=a+1; else return a; return a; }'
 
 # function call
 assert 3 'main() { return ret3(); }'
@@ -99,7 +99,7 @@ assert 55 'fib(a) { if(a == 0) return 0; if(a == 1) return 1; return fib(a-1) + 
 
 
 # reference and
-assert 3 "main() {x=3;y=&x; return *y;}"
-assert 3 "main() {x=3; y=5; z=&y+8; return *z;}"
+assert 3 "main() {int x; int y; x=3;y=&x; return *y;}"
+assert 3 "main() {int x; int y; int z; x=3; y=5; z=&y+8; return *z;}"
 
 echo ok
