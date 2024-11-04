@@ -5,6 +5,7 @@ LVar *locals;
 bool is_initialize_variable;
 
 Node *new_node(NodeKind kind);
+void declspec();
 
 bool equal(char *op)
 {
@@ -52,7 +53,7 @@ Token *consume_ident()
 
 void expect(char *op)
 {
-    if (token->kind != TK_RESERVED || strlen(op) != token->len ||
+    if (strlen(op) != token->len ||
         memcmp(token->str, op, token->len))
         error_at(token->str, "'%s'ではありません", op);
     token = token->next;
@@ -121,6 +122,7 @@ Node *mul();
 Node *unary();
 Node *primary();
 
+// (type ident)? ("," type ident )*
 void parse_arg_definition(Function *fn)
 {
     int is_first = 0;
@@ -133,6 +135,7 @@ void parse_arg_definition(Function *fn)
         if (is_first != 0)
             expect(",");
         is_first = 1;
+        declspec();
 
         if (find_lvar(token))
             error_at(token->str, "same arg names are not allowed.");
@@ -143,11 +146,12 @@ void parse_arg_definition(Function *fn)
     fn->args = head.next;
 }
 
-// function-definition = ident "(" ")"
-//  | ident "(" ident, (",", ident)* ")"
+// function-definition = declspec ident "(" ")"
+//  | declspec ident "(" ident, (",", ident)* ")"
 Function *function()
 {
     Function *fn = calloc(1, sizeof(Function));
+    declspec();
     Token *func_token = consume_ident();
     // copy function name
     fn->func_name = calloc(func_token->len + 1, sizeof(char));
@@ -334,7 +338,26 @@ Node *stmt()
         // init
         if (!consume(";"))
         {
-            node->init = expr();
+            if (token->kind == TK_TYPE)
+            {
+
+                declspec();
+                Node *var = append_lvar(token);
+                token = token->next;
+                if (consume("="))
+                {
+                    node->init = new_binary(ND_ASSIGN, var, assign());
+                }
+                else
+                {
+                    node->init = var;
+                }
+            }
+            else
+            {
+                node->init = expr();
+            }
+
             // expr is not consume ";"
             expect(";");
         }
@@ -373,10 +396,10 @@ Node *stmt()
     return node;
 }
 
-// declspec = "int"?
+// declspec = "int"
 void declspec()
 {
-    skip("int");
+    expect("int");
 }
 
 // declarator = ident
